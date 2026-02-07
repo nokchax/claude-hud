@@ -43,13 +43,13 @@ export function renderUsageLine(ctx: RenderContext): string | null {
   // If 5h/7d both null or below threshold, but extraUsage exists → show extra only
   if (fiveHour === null && sevenDay === null && extraUsage) {
     const extraPart = formatExtraUsage(extraUsage, usageBarEnabled);
-    return `${label} ${dim('Extra')} ${extraPart}`;
+    return `${label} ${extraPart}`;
   }
 
   if (effectiveUsage < threshold) {
     if (extraUsage) {
       const extraPart = formatExtraUsage(extraUsage, usageBarEnabled);
-      return `${label} ${dim('Extra')} ${extraPart}`;
+      return `${label} ${extraPart}`;
     }
     return null;
   }
@@ -84,7 +84,7 @@ export function renderUsageLine(ctx: RenderContext): string | null {
   // Append extra_usage if present
   if (extraUsage) {
     const extraPart = formatExtraUsage(extraUsage, usageBarEnabled);
-    result += ` | ${dim('Extra')} ${extraPart}`;
+    result += ` | ${extraPart}`;
   }
 
   return result;
