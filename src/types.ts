@@ -52,12 +52,20 @@ export interface UsageWindow {
   resetAt: Date | null;
 }
 
+export interface ExtraUsage {
+  isEnabled: true;
+  monthlyLimit: number;   // cents
+  usedCredits: number;    // cents
+  utilization: number;    // 0-100%
+}
+
 export interface UsageData {
   planName: string | null;  // 'Max', 'Pro', or null for API users
   fiveHour: number | null;  // 0-100 percentage, null if unavailable
   sevenDay: number | null;  // 0-100 percentage, null if unavailable
   fiveHourResetAt: Date | null;
   sevenDayResetAt: Date | null;
+  extraUsage?: ExtraUsage | null;
   apiUnavailable?: boolean; // true if API call failed (user should check DEBUG logs)
   apiError?: string; // short error reason (e.g., 401, timeout)
 }

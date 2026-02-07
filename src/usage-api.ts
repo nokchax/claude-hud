@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as https from 'https';
 import { execFileSync } from 'child_process';
-import type { UsageData } from './types.js';
+import type { UsageData, ExtraUsage } from './types.js';
 import { createDebug } from './debug.js';
 
 export type { UsageData } from './types.js';
@@ -29,6 +29,12 @@ interface UsageApiResponse {
   seven_day?: {
     utilization?: number;
     resets_at?: string;
+  };
+  extra_usage?: {
+    is_enabled?: boolean;
+    monthly_limit?: number;
+    used_credits?: number;
+    utilization?: number;
   };
 }
 
@@ -155,6 +161,7 @@ export async function getUsage(overrides: Partial<UsageApiDeps> = {}): Promise<U
         sevenDay: null,
         fiveHourResetAt: null,
         sevenDayResetAt: null,
+        extraUsage: null,
         apiUnavailable: true,
         apiError: apiResult.error,
       };
@@ -170,12 +177,16 @@ export async function getUsage(overrides: Partial<UsageApiDeps> = {}): Promise<U
     const fiveHourResetAt = parseDate(apiResult.data.five_hour?.resets_at);
     const sevenDayResetAt = parseDate(apiResult.data.seven_day?.resets_at);
 
+    // Parse extra_usage (monthly overage for Max plans etc.)
+    const extraUsage = parseExtraUsage(apiResult.data.extra_usage);
+
     const result: UsageData = {
       planName,
       fiveHour,
       sevenDay,
       fiveHourResetAt,
       sevenDayResetAt,
+      extraUsage,
     };
 
     // Write to file cache
@@ -385,6 +396,19 @@ function parseDate(dateStr: string | undefined): Date | null {
     return null;
   }
   return date;
+}
+
+/** Parse extra_usage from API response (monthly overage for Max plans) */
+function parseExtraUsage(raw: UsageApiResponse['extra_usage']): ExtraUsage | null {
+  if (!raw?.is_enabled) return null;
+  const utilization = parseUtilization(raw.utilization);
+  if (utilization === null) return null;
+  return {
+    isEnabled: true,
+    monthlyLimit: raw.monthly_limit ?? 0,
+    usedCredits: raw.used_credits ?? 0,
+    utilization,
+  };
 }
 
 function fetchUsageApi(accessToken: string): Promise<UsageApiResult> {

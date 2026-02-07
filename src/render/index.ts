@@ -77,6 +77,8 @@ function renderExpanded(ctx: RenderContext): string[] {
     lines.push(`${identityLine} \u2502 ${usageLine}`);
   } else if (identityLine) {
     lines.push(identityLine);
+  } else if (usageLine) {
+    lines.push(usageLine);
   }
 
   const environmentLine = renderEnvironmentLine(ctx);
